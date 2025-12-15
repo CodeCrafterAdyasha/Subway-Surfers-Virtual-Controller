@@ -1,4 +1,4 @@
-# 🎮 Gesture Controlled Subway Surfers (Computer Vision)
+# Gesture Controlled Subway Surfers (Computer Vision)
 
 A real-time **gesture-based virtual controller** for Subway Surfers built using **Computer Vision**.  
 This project allows controlling the game using **hand movements and gestures**, without any machine learning models.
