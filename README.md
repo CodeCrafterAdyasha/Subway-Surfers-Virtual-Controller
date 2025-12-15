@@ -6,7 +6,7 @@ This project allows controlling the game using **hand movements and gestures**, 
 ---
 ## 📸 Demo
 
-![Gesture Controlled Subway Surfers Demo](Demo.gif)
+![Gesture Controlled Subway Surfers Demo](Demo.gif.gif)
 
 ## 🚀 Features
 
