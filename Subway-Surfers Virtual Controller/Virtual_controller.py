@@ -24,7 +24,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 pTime = 0
-active_action = "IDLE"
+current_action = "IDLE"
 
 # -------------------------------------------
 # STATE MEMORY (PREVENT REPEAT)
@@ -34,18 +34,19 @@ gesture_state = {
     'left': False,
     'right': False,
     'jump': False,
-    'slide': False
+    'slide': False,
+    'hover': False
 }
 
 # -------------------------------------------
-# LANE BOUNDARIES (SIMPLE)
+# LANE BOUNDARIES
 # -------------------------------------------
 
 LEFT_BOUND = 0.35
 RIGHT_BOUND = 0.65
 
 # -------------------------------------------
-# FINGER LANDMARKS
+# FINGER TIPS
 # -------------------------------------------
 
 FINGER_TIPS = [
@@ -113,7 +114,6 @@ while cap.isOpened():
 
         thumb = hand.landmark[mp_hands.HandLandmark.THUMB_TIP]
         index = hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-
         center_x = (thumb.x + index.x) / 2
 
         fingers = count_extended_fingers(hand)
@@ -128,24 +128,34 @@ while cap.isOpened():
                 press_and_release(Key.up)
                 gesture_state['jump'] = True
             current_action = "JUMP"
-
         else:
             gesture_state['jump'] = False
 
         # -----------------------------
         # SLIDE → THUMB + PINKY
         # -----------------------------
-        if fingers[0] and fingers[4] and not any(fingers[1:4]):
+        if fingers[0] and fingers[4] and not fingers[1] and not fingers[2] and not fingers[3]:
             if not gesture_state['slide']:
                 press_and_release(Key.down)
                 gesture_state['slide'] = True
             current_action = "SLIDE"
-
         else:
             gesture_state['slide'] = False
 
         # -----------------------------
-        # LEFT / RIGHT → PURE POSITION
+        # HOVERBOARD → ✌️ INDEX + MIDDLE
+        # (Thumb ignored – FIXED)
+        # -----------------------------
+        if fingers[1] and fingers[2] and not fingers[3] and not fingers[4]:
+            if not gesture_state['hover']:
+                press_and_release(Key.space)
+                gesture_state['hover'] = True
+            current_action = "HOVERBOARD"
+        else:
+            gesture_state['hover'] = False
+
+        # -----------------------------
+        # LEFT / RIGHT → HAND POSITION
         # -----------------------------
         if center_x < LEFT_BOUND:
             if not gesture_state['left']:
@@ -167,9 +177,9 @@ while cap.isOpened():
             if current_action == "IDLE":
                 current_action = "CENTER"
 
-        # DEBUG
-        cv2.putText(image, f"center_x: {center_x:.2f}", (w//2 - 80, 90),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,255), 2)
+        # DEBUG (optional)
+        cv2.putText(image, f"Fingers: {fingers}", (10, 110),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,255), 2)
 
     # FPS
     cTime = time.time()
@@ -182,7 +192,7 @@ while cap.isOpened():
     cv2.putText(image, f"Action: {current_action}", (10, 70),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-    cv2.imshow("Subway-Surfers Virtual Controller", image)
+    cv2.imshow("Subway Surfers Virtual Controller", image)
 
     if cv2.waitKey(5) & 0xFF == ord('q'):
         break
